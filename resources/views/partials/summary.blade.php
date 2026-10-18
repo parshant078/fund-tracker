@@ -20,13 +20,17 @@
 </div>
 <div class="card mb-3"><div class="card-header"><i class="bi bi-signpost-2 me-1 text-primary"></i>Work Pipeline — plan to done</div><div class="card-body">
 @forelse($works as $w)
-@php $spent = (float)($w->expenses_sum_amount ?? 0); $pct = $w->budget > 0 ? min(100, round($spent / $w->budget * 100)) : 0; @endphp
+@php $spent = (float)($w->expenses_sum_amount ?? 0); $pct = $w->budget > 0 ? min(100, round($spent / $w->budget * 100)) : 0; $remaining = max(0, $w->budget - $spent); @endphp
 <div class="border rounded-4 p-3 mb-3 work-accent work-{{ $w->status }}">
-  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
     <h5 class="mb-0">{{ $w->title }}</h5>
+    <div class="d-flex flex-column align-items-end gap-1">
     @if($w->status == 'completed')<span class="badge text-bg-success"><i class="bi bi-check-circle me-1"></i>Completed</span>
     @elseif($w->status == 'in_progress')<span class="badge text-bg-warning"><i class="bi bi-arrow-repeat me-1"></i>In Progress</span>
     @else<span class="badge text-bg-primary"><i class="bi bi-calendar-event me-1"></i>Planned</span>@endif
+    @if($remaining > 0)<span class="fw-bold text-danger"><i class="bi bi-exclamation-circle me-1"></i>Pending ₹{{ number_format($remaining, 0) }}</span>
+    @else<span class="badge text-bg-success"><i class="bi bi-check-all me-1"></i>Fully Paid</span>@endif
+    </div>
   </div>
   <div class="stepper">
     <div class="step done"><span class="sdot"><i class="bi bi-check"></i></span>Planned</div>
@@ -37,6 +41,7 @@
     <span><span class="text-muted">Budget</span> <b>₹{{ number_format($w->budget, 0) }}</b></span>
     <span><span class="text-muted">Spent</span> <b class="text-danger">₹{{ number_format($spent, 0) }}</b></span>
     <span><span class="text-muted">Advance</span> <b class="text-primary">₹{{ number_format($w->advance_paid, 0) }}</b></span>
+    <span><span class="text-muted">Remaining</span> <b class="{{ $remaining > 0 ? 'text-danger bg-warning-subtle px-2 py-1 rounded' : 'text-success' }}">₹{{ number_format($remaining, 0) }}</b></span>
   </div>
   <div class="progress mt-2" style="height:7px"><div class="progress-bar {{ $pct >= 100 ? 'bg-danger' : ($pct >= 70 ? 'bg-warning' : 'bg-success') }}" style="width:{{ $pct }}%"></div></div>
   @if($w->notes)<p class="text-muted small mt-2 mb-0"><i class="bi bi-arrow-right-circle me-1"></i><b>Next:</b> {{ $w->notes }}</p>@endif
