@@ -16,7 +16,9 @@ class ApiTokenAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->bearerToken() ?? $request->query('api_token');
+        $token = $request->bearerToken()
+            ?? $request->header('X-Api-Token')
+            ?? $request->query('api_token');
 
         if (! is_string($token) || $token === '') {
             return response()->json(['message' => 'Unauthenticated.'], 401);

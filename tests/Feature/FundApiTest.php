@@ -31,6 +31,12 @@ class FundApiTest extends TestCase
         $this->getJson('/api/funds')->assertStatus(401);
     }
 
+    public function test_api_token_header_is_accepted(): void
+    {
+        $this->getJson('/api/summary', ['X-Api-Token' => $this->token, 'Accept' => 'application/json'])
+            ->assertOk();
+    }
+
     public function test_summary_returns_totals(): void
     {
         $this->getJson('/api/summary', $this->headers())->assertOk()

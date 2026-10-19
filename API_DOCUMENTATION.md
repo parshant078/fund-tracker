@@ -13,10 +13,14 @@ Live URL kholne ke liye HTTP Basic Auth lagta hai.
 - curl me: `-u parshant129:Parshant@129`
 
 **Layer 2 — API token (local + live dono pe):**
-Har `/api/*` request me header bhejo:
+Har `/api/*` request me token bhejo. Teen tarike — pehla local ke liye, doosra live ke liye (kyunki live pe Basic-auth bhi `Authorization` header use karta hai, isliye Bearer wahan takra jayega):
 
 ```
+# Local (ya jahan Basic-auth na ho):
 Authorization: Bearer sWiajnR503nchjVJlf5vthTiJhujRx1zZuVqbqUyMJFqC77XJxcGiolU8C5C
+
+# Live (Basic-auth ke saath — X-Api-Token header use karo):
+X-Api-Token: sWiajnR503nchjVJlf5vthTiJhujRx1zZuVqbqUyMJFqC77XJxcGiolU8C5C
 ```
 
 ## Base URLs
@@ -63,16 +67,17 @@ Neeche `TOKEN` aur `BASE` har baar yahi honge:
 TOKEN="sWiajnR503nchjVJlf5vthTiJhujRx1zZuVqbqUyMJFqC77XJxcGiolU8C5C"
 LOCAL="http://127.0.0.1:8001"
 LIVE="https://idea-creatorz.com/ft-b9ed172a658efe86fccd"
+BASIC="parshant129:Parshant@129"
 ```
 
 **Summary dekho (live):**
 ```bash
-curl -s -u parshant129:Parshant@129 -H "Authorization: Bearer $TOKEN" "$LIVE/api/summary"
+curl -s -u $BASIC -H "X-Api-Token: $TOKEN" "$LIVE/api/summary"
 ```
 
 **Fund add karo (live):**
 ```bash
-curl -s -u parshant129:Parshant@129 -H "Authorization: Bearer $TOKEN" \
+curl -s -u $BASIC -H "X-Api-Token: $TOKEN" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
   -X POST "$LIVE/api/funds" \
   -d '{"donor_name":"Yes Bank","amount":50000,"date":"2026-10-19","note":"October fund"}'
@@ -80,8 +85,8 @@ curl -s -u parshant129:Parshant@129 -H "Authorization: Bearer $TOKEN" \
 
 **Expense add karo (live) — pehle category id lo:**
 ```bash
-curl -s -u parshant129:Parshant@129 -H "Authorization: Bearer $TOKEN" "$LIVE/api/categories"
-curl -s -u parshant129:Parshant@129 -H "Authorization: Bearer $TOKEN" \
+curl -s -u $BASIC -H "X-Api-Token: $TOKEN" "$LIVE/api/categories"
+curl -s -u $BASIC -H "X-Api-Token: $TOKEN" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
   -X POST "$LIVE/api/expenses" \
   -d '{"category_id":1,"work_id":1,"amount":2500,"date":"2026-10-19","paid_to":"Ramesh","note":"Cement"}'
@@ -89,16 +94,16 @@ curl -s -u parshant129:Parshant@129 -H "Authorization: Bearer $TOKEN" \
 
 **Work add karo + advance do (live):**
 ```bash
-curl -s -u parshant129:Parshant@129 -H "Authorization: Bearer $TOKEN" \
+curl -s -u $BASIC -H "X-Api-Token: $TOKEN" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
   -X POST "$LIVE/api/works" \
   -d '{"title":"Boundary Wall","budget":80000,"status":"planned"}'
-curl -s -u parshant129:Parshant@129 -H "Authorization: Bearer $TOKEN" \
+curl -s -u $BASIC -H "X-Api-Token: $TOKEN" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
   -X POST "$LIVE/api/works/5/advance" -d '{"amount":10000}'
 ```
 
-Local pe same commands, bas `-u parshant129:Parshant@129` hata do aur `$LOCAL` use karo.
+Local pe same commands, bas `-u $BASIC` hata do, `$LOCAL` use karo, aur `X-Api-Token` ki jagah `Authorization: Bearer $TOKEN` bhi chalega.
 
 ## Token dobara banana ho to
 
