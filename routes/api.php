@@ -3,10 +3,14 @@
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ExpenseController;
 use App\Http\Controllers\Api\FundController;
+use App\Http\Controllers\Api\FunderApiController;
 use App\Http\Controllers\Api\InviteController;
 use App\Http\Controllers\Api\SummaryController;
 use App\Http\Controllers\Api\WorkController;
 use Illuminate\Support\Facades\Route;
+
+// Public: shared funder view via invite code (revocable in Invites).
+Route::get('/funder/{code}', [FunderApiController::class, 'show']);
 
 Route::middleware('api.token')->group(function () {
     Route::get('/summary', [SummaryController::class, 'show']);

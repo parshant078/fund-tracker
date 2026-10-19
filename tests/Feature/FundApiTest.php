@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Invite;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -83,5 +84,19 @@ class FundApiTest extends TestCase
             'date' => '2026-10-19',
         ], $this->headers())->assertStatus(422)
             ->assertJsonValidationErrors(['category_id']);
+    }
+
+    public function test_funder_api_is_public_but_code_gated(): void
+    {
+        $invite = Invite::generate('Family Group');
+
+        $this->getJson('/api/funder/WRONG1')->assertNotFound();
+
+        $this->getJson('/api/funder/'.strtolower($invite->code))->assertOk()
+            ->assertJsonPath('invite.code', $invite->code)
+            ->assertJsonStructure(['personal_total', 'total_funds', 'total_expenses', 'balance', 'funds', 'expenses']);
+
+        $invite->update(['active' => false]);
+        $this->getJson('/api/funder/'.$invite->code)->assertNotFound();
     }
 }
