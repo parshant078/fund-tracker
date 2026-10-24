@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
+use App\Models\Expense;
 use App\Models\Work;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class WorkController extends Controller
 {
@@ -65,9 +68,32 @@ class WorkController extends Controller
 
     public function advance(Request $request, Work $work)
     {
-        $data = $request->validate(['amount' => 'required|numeric|min:1']);
-        $work->increment('advance_paid', $data['amount']);
+        $data = $request->validate([
+            'amount' => 'required|numeric|min:1',
+            'category_id' => 'nullable|exists:categories,id',
+            'date' => 'nullable|date',
+            'paid_to' => 'nullable|string|max:100',
+            'note' => 'nullable|string|max:255',
+        ]);
 
-        return back()->with('ok', 'Advance updated.');
+        $categoryId = $data['category_id'] ?? Category::where('name', 'Material')->value('id')
+            ?? Category::orderBy('id')->value('id');
+
+        abort_if(! $categoryId, 422, 'No category found for advance expense.');
+
+        DB::transaction(function () use ($data, $work, $categoryId) {
+            $work->increment('advance_paid', $data['amount']);
+
+            Expense::create([
+                'category_id' => $categoryId,
+                'work_id' => $work->id,
+                'amount' => $data['amount'],
+                'date' => $data['date'] ?? now()->toDateString(),
+                'paid_to' => $data['paid_to'] ?? null,
+                'note' => $data['note'] ?? ('Advance for '.$work->title),
+            ]);
+        });
+
+        return back()->with('ok', 'Advance added + expense entry created.');
     }
 }
